@@ -1,0 +1,116 @@
+name: Build Flutter APK
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  # 构建 Demo 版本（无需 Firebase 配置）
+  build-demo:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.16.0'
+        channel: 'stable'
+        cache: true
+    
+    - name: Build Demo APK
+      run: |
+        cd lushuaih
+        # 使用独立版本（无 Firebase 依赖）
+        cp lib/main_standalone.dart lib/main.dart
+        cp pubspec_standalone.yaml pubspec.yaml
+        flutter pub get
+        flutter build apk --release
+    
+    - name: Rename APK
+      run: |
+        mv lushuaih/build/app/outputs/flutter-apk/app-release.apk \
+           lushuaih-demo-v1.0.0.apk
+    
+    - name: Upload Demo APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: lushuaih-demo-apk
+        path: lushuaih-demo-v1.0.0.apk
+        retention-days: 30
+    
+    - name: Create Release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: demo-v1.0.0-${{ github.run_number }}
+        name: lushuaih Demo v1.0.0 Build ${{ github.run_number }}
+        body: |
+          ## lushuaih 社区论坛应用
+          
+          ### 这是一个演示版本
+          - 完整的 UI 界面
+          - 模拟数据展示
+          - 无需登录即可体验
+          
+          如需完整功能（登录、发帖、评论等），请配置 Firebase 后构建完整版本。
+        files: lushuaih-demo-v1.0.0.apk
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # 构建完整版本（需要 Firebase 配置）
+  build-full:
+    runs-on: ubuntu-latest
+    if: secrets.GOOGLE_SERVICES_JSON != ''
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.16.0'
+        channel: 'stable'
+        cache: true
+    
+    - name: Create google-services.json
+      run: |
+        echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > lushuaih/android/app/google-services.json
+    
+    - name: Build Full APK
+      run: |
+        cd lushuaih
+        flutter pub get
+        flutter build apk --release
+    
+    - name: Rename APK
+      run: |
+        mv lushuaih/build/app/outputs/flutter-apk/app-release.apk \
+           lushuaih-full-v1.0.0.apk
+    
+    - name: Upload Full APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: lushuaih-full-apk
+        path: lushuaih-full-v1.0.0.apk
+        retention-days: 30
