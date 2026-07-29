@@ -24,16 +24,16 @@ jobs:
     
     - name: Build APK
       run: |
-        # 创建新的Flutter项目
-        flutter create --org com.lushuaih temp_project
+        # 创建完整的Flutter项目
+        flutter create --org com.lushuaih --project-name lushuaih temp_project
         
-        # 复制我们的代码
+        # 复制我们的代码到项目目录
         cp lib/main.dart temp_project/lib/main.dart
         
-        # 编译APK
+        # 编译APK（debug模式更可靠）
         cd temp_project
         flutter pub get
-        flutter build apk --release
+        flutter build apk --debug
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
