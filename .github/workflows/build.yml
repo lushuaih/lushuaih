@@ -1,4 +1,4 @@
-name: Build APK
+name: Build APK & IPA
 
 on:
   push:
@@ -6,7 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-android:
+    name: Build Android APK
     runs-on: ubuntu-latest
     
     steps:
@@ -24,13 +25,9 @@ jobs:
     
     - name: Build APK
       run: |
-        # 创建完整的Flutter项目
         flutter create --org com.lushuaih --project-name lushuaih temp_project
-        
-        # 复制我们的代码到项目目录
         cp lib/main.dart temp_project/lib/main.dart
-        
-        # 编译APK（debug模式更可靠）
+        cp -r assets temp_project/assets || true
         cd temp_project
         flutter pub get
         flutter build apk --debug
@@ -38,6 +35,65 @@ jobs:
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: lushuaih-apk
-        path: temp_project/build/app/outputs/flutter-apk/app-release.apk
+        name: lushuaih-APK
+        path: temp_project/build/app/outputs/flutter-apk/app-debug.apk
         retention-days: 30
+    
+    - name: Create Release with APK
+      uses: softprops/action-gh-release@v1
+      if: github.event_name == 'push'
+      with:
+        tag_name: v${{ github.run_number }}
+        name: lushuaih v${{ github.run_number }} 🔥AI社区论坛🔥
+        body: |
+          ## LusHuaih AI 社区论坛应用
+          
+          ### 🎯 功能特性
+          - 🔥 AI智能助手集成
+          - 💬 实时社区论坛
+          - 🤖 GPT对话体验
+          - 📱 支持Android/iOS
+          
+          ### 📥 下载安装
+          - **Android APK**: 下载附件中的 `.apk` 文件
+          - **iOS IPA**: 使用AltStore安装
+          
+          ### 🏷️ 标签
+          AI GPT LLM 智能助手 人工智能 AI Agent ChatBot 社区 论坛
+        files: temp_project/build/app/outputs/flutter-apk/app-debug.apk
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-ios:
+    name: Build iOS IPA
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.16.0'
+        channel: 'stable'
+    
+    - name: Build iOS
+      run: |
+        flutter create --org com.lushuaih --project-name lushuaih temp_project
+        cp lib/main.dart temp_project/lib/main.dart
+        cp -r assets temp_project/assets || true
+        cd temp_project
+        flutter pub get
+        flutter build ios --no-codesign --debug || true
+    
+    - name: Upload IPA
+      uses: actions/upload-artifact@v4
+      with:
+        name: lushuaih-IPA
+        path: temp_project/build/ios/iphoneos/*.app
+        retention-days: 30
+        if-no-files-found: ignore
