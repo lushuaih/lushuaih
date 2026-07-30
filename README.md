@@ -1,6 +1,31 @@
-# lushuaih - Flutter 社区论坛应用
+# lushuaih - 社区论坛应用 🔥AI🔥GPT🔥LLM
 
-一个功能完整的移动端社区论坛应用，基于 Flutter 和 Firebase 构建。
+![软件封面](assets/images/app_icon.png)
+
+**LusHuaih AI** - 下一代智能社区论坛应用，融合AI技术的社交平台
+
+标签: `AI` `GPT` `LLM` `智能助手` `人工智能` `AI Agent` `ChatBot` `社区` `论坛` `社交`
+
+---
+
+## 📱 直接下载安装
+
+### Android 安卓手机
+- 📥 下载 APK 文件：[点击下载最新版](https://github.com/lushuaih/lushuaih/actions)
+- 安装步骤：
+  1. 下载 `app-release.apk`
+  2. 允许安装未知来源应用
+  3. 点击安装即可使用
+
+### iOS 苹果手机
+- 📥 下载 IPA 文件：[点击下载](https://github.com/lushuaih/lushuaih/releases)
+- 安装步骤：
+  1. 下载 `.ipa` 文件
+  2. 使用 AltStore 或 Cydia Impactor 安装
+  3. 信任开发者证书
+  4. 即可使用
+
+---
 
 ## 功能特性
 
